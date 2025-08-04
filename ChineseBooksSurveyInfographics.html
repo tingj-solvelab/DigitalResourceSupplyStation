@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>圖解中國古代文獻數位資源</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Energetic & Playful -->
+    <!-- Application Structure Plan: 本資訊圖表採用敘事性結構，引導使用者從宏觀到微觀，最終獲得實用策略。1. 開篇以震撼性數據（總量級）吸引注意，並建立三大資源類型（國家、開放、商業）的基本認知。2. 核心部分是「主要平台光譜圖」，用氣泡圖直觀比較各平台的規模、類型與特性。3. 接著是「按『文』索驥」，一個實用指南，將用戶需求（野史、雜記等）直接對應到推薦平台。4. 最後以「高效研究者工作流」總結報告中的檢索建議，提供清晰的行動步驟。此結構旨在將複雜的報告內容轉化為一個引人入勝且易於記憶的視覺故事。 -->
+    <!-- Visualization & Content Choices: 1. 數據點: 三大資源類型 -> 目標: 比較 -> 呈現: 三欄式卡片佈局 (HTML/CSS) -> 理由: 清晰區分，便於並列比較。 2. 數據點: 各平台規模、類型、訪問方式 -> 目標: 比較/關係 -> 呈現: 氣泡圖 (Chart.js/Canvas) -> 理由: 單一視圖整合多維度數據，視覺衝擊力強，比條形圖更豐富。 3. 數據點: 特定文獻類型 (野史、雜記、神話) -> 目標: 組織/引導 -> 呈現: 圖標化卡片列表 (HTML/CSS) -> 理由: 將抽象需求具象化，提供直接、清晰的解決方案。 4. 數據點: 檢索策略 -> 目標: 組織/流程 -> 呈現: 垂直步驟流程圖 (HTML/CSS) -> 理由: 將文字建議轉化為可執行的步驟，邏輯清晰。 CONFIRMATION: NO SVG used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background-color: #FDFBF5; 
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 450px;
+            max-height: 60vh;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 500px;
+            }
+        }
+        .gradient-text {
+            background: linear-gradient(90deg, #FF4E50, #FC913A);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-fill-color: transparent;
+        }
+        .flow-step {
+            position: relative;
+            padding-left: 40px;
+            padding-bottom: 2rem;
+        }
+        .flow-step:not(:last-child)::before {
+            content: '';
+            position: absolute;
+            left: 14px;
+            top: 32px;
+            width: 2px;
+            height: calc(100% - 20px);
+            background-color: #F9D423;
+        }
+        .flow-dot {
+            position: absolute;
+            left: 0;
+            top: 4px;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background-color: #FC913A;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            border: 3px solid #FDFBF5;
+        }
+    </style>
+</head>
+<body class="bg-[#FDFBF5] text-gray-800">
+
+    <div class="container mx-auto px-4 py-12">
+
+        <header class="text-center mb-16">
+            <h1 class="text-4xl md:text-6xl font-black mb-4">圖解中國古代文獻</h1>
+            <h2 class="text-2xl md:text-3xl font-bold gradient-text">數位資源探索指南</h2>
+            <p class="max-w-3xl mx-auto mt-4 text-gray-600">
+                從國家寶藏到民間私語，中國古代文獻的數位化浪潮已然來臨。本指南將複雜的學術報告化為清晰的視覺圖表，助您一圖看懂數位古籍的浩瀚星河，精準定位您的研究目標。
+            </p>
+        </header>
+
+        <section class="mb-20">
+            <h3 class="text-3xl font-bold text-center mb-10">數位古籍的三大版圖</h3>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+                <div class="bg-white rounded-xl shadow-lg p-6 text-center border-t-4 border-[#FF4E50]">
+                    <div class="text-5xl mb-4">🏛️</div>
+                    <h4 class="text-xl font-bold mb-2">國家與學術機構</h4>
+                    <p class="text-gray-600 text-sm">以國家圖書館、高校為代表。資源權威、善本豐富，是學術研究的基石，專注於保存與傳承。</p>
+                </div>
+                <div class="bg-white rounded-xl shadow-lg p-6 text-center border-t-4 border-[#FC913A]">
+                    <div class="text-5xl mb-4">🌐</div>
+                    <h4 class="text-xl font-bold mb-2">開放共享平台</h4>
+                    <p class="text-gray-600 text-sm">以 Ctext.org、書格為代表。免費開放、內容多元、工具創新，致力於文化普及與數位人文實踐。</p>
+                </div>
+                <div class="bg-white rounded-xl shadow-lg p-6 text-center border-t-4 border-[#F9D423]">
+                    <div class="text-5xl mb-4">💰</div>
+                    <h4 class="text-xl font-bold mb-2">專業商業資料庫</h4>
+                    <p class="text-gray-600 text-sm">以愛如生、書同文為代表。提供高度專業化、集成化的特定文獻，服務於深度研究的精準需求。</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="mb-20">
+            <h3 class="text-3xl font-bold text-center mb-2">主要平台光譜圖</h3>
+            <p class="text-gray-600 text-center mb-8 max-w-3xl mx-auto">各平台在文獻規模、類型和功能性上各有千秋。此圖將它們置於同一光譜中進行比較。氣泡越大，代表其公開的文獻規模越宏大。</p>
+            <div class="bg-white rounded-xl shadow-lg p-4 md:p-8">
+                <div class="chart-container">
+                    <canvas id="platformChart"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <section class="mb-20">
+            <h3 class="text-3xl font-bold text-center mb-10">按「文」索驥：快速定位你的目標文獻</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-7xl mx-auto">
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <h4 class="text-xl font-bold mb-3 flex items-center"><span class="text-4xl mr-3">📖</span>成冊著作</h4>
+                    <p class="text-sm text-gray-600 mb-4">經、史、子、集等核心典籍，數位化程度最高。</p>
+                    <ul class="text-sm space-y-2">
+                        <li class="font-semibold">首選: <span class="font-normal">國圖、Ctext.org</span></li>
+                        <li class="font-semibold">叢書: <span class="font-normal">愛如生 (四庫系列)</span></li>
+                    </ul>
+                </div>
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <h4 class="text-xl font-bold mb-3 flex items-center"><span class="text-4xl mr-3">📜</span>民間野史</h4>
+                    <p class="text-sm text-gray-600 mb-4">官方歷史外的社會脈絡與軼聞趣事。</p>
+                    <ul class="text-sm space-y-2">
+                        <li class="font-semibold">專門: <span class="font-normal">書格 (野史集成)</span></li>
+                        <li class="font-semibold">散見: <span class="font-normal">國學大師網、地方志庫</span></li>
+                    </ul>
+                </div>
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <h4 class="text-xl font-bold mb-3 flex items-center"><span class="text-4xl mr-3">✍️</span>雜記筆記</h4>
+                    <p class="text-sm text-gray-600 mb-4">作者的隨筆見聞，內容包羅萬象。</p>
+                    <ul class="text-sm space-y-2">
+                        <li class="font-semibold">分類查找: <span class="font-normal">國學大師網 (筆記小說大觀)</span></li>
+                        <li class="font-semibold">全文檢索: <span class="font-normal">Ctext.org、愛如生</span></li>
+                    </ul>
+                </div>
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <h4 class="text-xl font-bold mb-3 flex items-center"><span class="text-4xl mr-3">🐉</span>神話傳說</h4>
+                    <p class="text-sm text-gray-600 mb-4">民族的集體記憶與早期世界觀。</p>
+                    <ul class="text-sm space-y-2">
+                        <li class="font-semibold">原始文本: <span class="font-normal">Ctext.org (山海經、楚辭)</span></li>
+                        <li class="font-semibold">普及讀物: <span class="font-normal">各大電子書、有聲書平台</span></li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <section>
+            <h3 class="text-3xl font-bold text-center mb-10">高效研究者工作流</h3>
+            <div class="max-w-2xl mx-auto">
+                <div class="flow-step">
+                    <div class="flow-dot">1</div>
+                    <h4 class="font-bold text-lg">多平台交叉檢索</h4>
+                    <p class="text-gray-600 text-sm">不依賴單一平台。在國圖查善本，在Ctext做分析，在書格找圖像，確保研究的全面性。</p>
+                </div>
+                <div class="flow-step">
+                    <div class="flow-dot">2</div>
+                    <h4 class="font-bold text-lg">善用高級檢索</h4>
+                    <p class="text-gray-600 text-sm">掌握布林邏輯 (AND/OR)、繁簡/異體字通檢等功能，實現精準打擊，而非大海撈針。</p>
+                </div>
+                <div class="flow-step">
+                    <div class="flow-dot">3</div>
+                    <h4 class="font-bold text-lg">影像文本對照</h4>
+                    <p class="text-gray-600 text-sm">學術研究務必參考原始影像。它是校勘、版本研究和字體演變的關鍵依據。</p>
+                </div>
+                 <div class="flow-step">
+                    <div class="flow-dot">4</div>
+                    <h4 class="font-bold text-lg">利用元數據與社群</h4>
+                    <p class="text-gray-600 text-sm">利用書目、分類等元數據導航。參與線上論壇，獲取最新資訊與研究經驗。</p>
+                </div>
+            </div>
+        </section>
+        
+        <footer class="text-center mt-16 pt-8 border-t border-gray-200">
+            <p class="text-lg font-bold">未來展望：AI 賦能與跨庫整合</p>
+            <p class="text-gray-500 text-sm mt-2 max-w-xl mx-auto">人工智慧與跨庫整合技術將進一步簡化檢索流程，提供更智能化的研究工具，推動中國古代文獻研究走向更廣闊的領域。</p>
+        </footer>
+
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const wrapLabel = (label) => {
+                if (label.length > 16) {
+                    const words = label.split(/\s+/);
+                    const lines = [];
+                    let currentLine = '';
+                    words.forEach(word => {
+                        if ((currentLine + word).length > 16) {
+                            lines.push(currentLine.trim());
+                            currentLine = word + ' ';
+                        } else {
+                            currentLine += word + ' ';
+                        }
+                    });
+                    lines.push(currentLine.trim());
+                    return lines;
+                }
+                return label;
+            };
+            
+            const tooltipTitleCallback = (tooltipItems) => {
+                const item = tooltipItems[0];
+                let label = item.chart.data.labels[item.dataIndex];
+                if (Array.isArray(label)) {
+                    return label.join(' ');
+                }
+                return label;
+            };
+            
+            const platformData = [
+                { name: '中華古籍資源庫', type: 1, depth: 5, scale: 20000, access: '免費' },
+                { name: '漢達文庫', type: 1.2, depth: 5, scale: 8000, access: '付費/機構' },
+                { name: '書格', type: 2, depth: 3, scale: 3000, access: '免費' },
+                { name: '中國哲學書電子化計劃', type: 2.2, depth: 5, scale: 30000, access: '免費' },
+                { name: '國學大師網', type: 2.4, depth: 3, scale: 20000, access: '免費' },
+                { name: '識典古籍', type: 2.6, depth: 4, scale: 2000, access: '免費' },
+                { name: '愛如生系列', type: 3, depth: 5, scale: 10000, access: '付費/機構' },
+                { name: '書同文數據庫', type: 3.2, depth: 4, scale: 5000, access: '付費/機構' },
+            ];
+
+            const ctx = document.getElementById('platformChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'bubble',
+                data: {
+                    datasets: platformData.map(p => ({
+                        label: p.name,
+                        data: [{
+                            x: p.type + (Math.random() - 0.5) * 0.1,
+                            y: p.depth + (Math.random() - 0.5) * 0.2,
+                            r: Math.log(p.scale + 1) * 2.8
+                        }],
+                        backgroundColor: p.access === '免費' ? 'rgba(252, 145, 58, 0.7)' : 'rgba(255, 78, 80, 0.7)',
+                        borderColor: p.access === '免費' ? '#FC913A' : '#FF4E50',
+                        borderWidth: 2,
+                    }))
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const p = platformData[context.datasetIndex];
+                                    return [
+                                        `${p.name}`,
+                                        `規模: ${p.scale.toLocaleString()} 部/種`,
+                                        `訪問: ${p.access}`
+                                    ];
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            title: { display: true, text: '← 學術權威 · 開放共享 · 商業專業 →', font: { size: 14 } },
+                            min: 0.5,
+                            max: 3.8,
+                            ticks: {
+                                callback: (value, index, ticks) => {
+                                    if (value > 0.8 && value < 1.4) return '國家/學術';
+                                    if (value > 1.8 && value < 2.8) return '開放共享';
+                                    if (value > 2.8 && value < 3.4) return '商業';
+                                    return '';
+                                }
+                            },
+                             grid: {
+                                drawOnChartArea: false,
+                            }
+                        },
+                        y: {
+                            title: { display: true, text: '功能性與專業深度', font: { size: 14 } },
+                            min: 2.5,
+                            max: 5.5,
+                            ticks: {
+                                stepSize: 1
+                            }
+                        }
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>
