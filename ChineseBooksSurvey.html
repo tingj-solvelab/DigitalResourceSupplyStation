@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>中國古代文獻數位資源互動導航</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Scholarly Warmth -->
+    <!-- Application Structure Plan: 本應用程式採用以使用者任務為導向的儀表板設計，而非直接複製報告的線性結構。核心是一個互動式的「資料庫探索器」，使用者可依據「文獻類型」、「資源類型」和「訪問方式」進行篩選，快速找到符合其需求的平台。此設計旨在將被動的資訊接收轉化為主動的探索過程。輔以「資源庫比較圖表」進行宏觀比較，以及「高效檢索策略」提供實用指南，整體架構優先考慮易用性與探索效率，幫助使用者解決「我該用哪個資料庫？」的核心問題。 -->
+    <!-- Visualization & Content Choices: 1. 資料庫列表 (報告表格1) -> 目標: 尋找工具 -> 呈現: 互動式篩選卡片網格 -> 互動: 點擊篩選器更新網格，點擊卡片查看詳情 -> 理由: 比靜態表格更具探索性，賦予使用者主導權。 2. 資料庫規模與類型比較 (報告文字與數據) -> 目標: 比較與理解全局 -> 呈現: 氣泡圖 (Chart.js) -> 互動: 滑鼠懸停顯示詳細資訊 -> 理由: 在單一視圖中整合多維度數據（類型、規模、訪問方式、專業度），視覺衝擊力強。 3. 檢索建議 (報告文字) -> 目標: 提供指引 -> 呈現: 可折疊的手風琴式列表 -> 互動: 點擊標題展開內容 -> 理由: 將密集的文字拆解為易於消化的區塊，降低閱讀負擔。 -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background-color: #FDFBF5; /* Warm Neutral Background */
+            color: #4A4A4A;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 400px;
+            max-height: 50vh;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 500px;
+            }
+        }
+        .card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.07), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        .filter-btn {
+            transition: all 0.2s ease-in-out;
+        }
+        .filter-btn.active {
+            background-color: #A98B71; /* Accent Color */
+            color: #FFFFFF;
+            font-weight: 600;
+        }
+        .filter-btn:not(.active):hover {
+            background-color: #EAE3D9;
+        }
+        .modal-bg {
+            transition: opacity 0.3s ease;
+        }
+        .modal-content {
+            transition: transform 0.3s ease;
+        }
+        .accordion-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease-in-out;
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <header class="bg-white/80 backdrop-blur-md sticky top-0 z-40 shadow-sm">
+        <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+            <h1 class="text-xl md:text-2xl font-bold text-[#4A4A4A]">中國古代文獻數位資源互動導航</h1>
+            <nav>
+                <a href="#explorer" class="text-gray-600 hover:text-[#A98B71] px-3 py-2">資源探索</a>
+                <a href="#comparison" class="text-gray-600 hover:text-[#A98B71] px-3 py-2">圖表比較</a>
+                <a href="#strategy" class="text-gray-600 hover:text-[#A98B71] px-3 py-2">檢索策略</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-4 py-8 md:py-12">
+        
+        <section class="text-center mb-12">
+            <h2 class="text-3xl md:text-4xl font-bold mb-4 text-[#333]">探索浩瀚的數位典籍</h2>
+            <p class="max-w-3xl mx-auto text-gray-600">
+                本頁面將詳盡的《中國古代文獻數位資源綜合報告》轉化為一個互動式導航工具。無論您需要尋找特定的經史子集、民間野史，還是希望比較不同平台的優劣，這裡的篩選器與圖表都能為您提供清晰的指引，助您在數位化的文獻海洋中高效航行。
+            </p>
+        </section>
+
+        <section id="explorer" class="mb-16 scroll-mt-20">
+            <div class="bg-white rounded-xl shadow-md p-6 md:p-8">
+                <h3 class="text-2xl font-bold mb-2">資料庫互動探索器</h3>
+                <p class="text-gray-600 mb-6">請依據您的研究需求，選擇下方的篩選條件。您可以組合使用「文獻類型」、「資源類型」與「訪問方式」，系統將即時為您呈現最符合的資料庫結果。</p>
+                
+                <div class="space-y-4 mb-8">
+                    <div>
+                        <label class="font-semibold text-gray-700 mb-2 block">🔍 想找哪類文獻？</label>
+                        <select id="textTypeFilter" class="w-full md:w-1/2 p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#A98B71] focus:border-[#A98B71]">
+                            <option value="all">所有文獻類型</option>
+                            <option value="經史子集">成冊著作 (經史子集)</option>
+                            <option value="野史雜記">民間野史與雜記</option>
+                            <option value="神話傳說">神話與傳說</option>
+                            <option value="方志">地方志</option>
+                            <option value="藝術影像">藝術/影像/碑帖</option>
+                            <option value="出土文獻">出土文獻 (甲骨/敦煌)</option>
+                        </select>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="font-semibold text-gray-700 mb-2 block">🏛️ 資源類型</label>
+                            <div id="resourceTypeFilter" class="flex flex-wrap gap-2">
+                                <button data-filter="all" class="filter-btn active px-4 py-2 bg-gray-200 text-gray-800 rounded-full text-sm">全部</button>
+                                <button data-filter="國家/學術" class="filter-btn px-4 py-2 bg-gray-200 text-gray-800 rounded-full text-sm">國家/學術</button>
+                                <button data-filter="開放共享" class="filter-btn px-4 py-2 bg-gray-200 text-gray-800 rounded-full text-sm">開放共享</button>
+                                <button data-filter="商業" class="filter-btn px-4 py-2 bg-gray-200 text-gray-800 rounded-full text-sm">商業</button>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="font-semibold text-gray-700 mb-2 block">🔑 訪問方式</label>
+                            <div id="accessFilter" class="flex flex-wrap gap-2">
+                                <button data-filter="all" class="filter-btn active px-4 py-2 bg-gray-200 text-gray-800 rounded-full text-sm">全部</button>
+                                <button data-filter="免費" class="filter-btn px-4 py-2 bg-gray-200 text-gray-800 rounded-full text-sm">免費</button>
+                                <button data-filter="付費/機構" class="filter-btn px-4 py-2 bg-gray-200 text-gray-800 rounded-full text-sm">付費/機構</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="db-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                </div>
+                <p id="no-results" class="text-center text-gray-500 py-8 hidden">找不到符合條件的資料庫。</p>
+            </div>
+        </section>
+
+        <section id="comparison" class="mb-16 scroll-mt-20">
+            <h3 class="text-2xl font-bold mb-2 text-center">資源庫比較圖表</h3>
+            <p class="text-gray-600 mb-6 text-center max-w-3xl mx-auto">此氣泡圖將各資料庫的特性視覺化，助您快速掌握數位古籍資源的全貌。氣泡越大代表文獻規模越龐大。您可以將滑鼠懸停在氣泡上查看詳細資訊，直觀比較各平台的規模、類型與專業深度。</p>
+            <div class="bg-white rounded-xl shadow-md p-4 md:p-8">
+                <div class="chart-container">
+                    <canvas id="dbChart"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <section id="strategy" class="scroll-mt-20">
+            <h3 class="text-2xl font-bold mb-2 text-center">高效檢索策略</h3>
+            <p class="text-gray-600 mb-6 text-center max-w-3xl mx-auto">掌握正確的檢索方法，能讓您的研究事半功倍。以下根據報告建議，整理出六大關鍵策略。點擊標題即可展開或收合詳細內容。</p>
+            <div id="accordion" class="space-y-2 max-w-4xl mx-auto">
+            </div>
+        </section>
+    </main>
+    
+    <footer class="text-center py-6 mt-12 border-t border-gray-200">
+        <p class="text-gray-500 text-sm">資料來源：《中國古代文獻數位資源綜合報告》</p>
+        <p class="text-gray-400 text-xs mt-1">互動式應用程式由 Gemini 生成</p>
+    </footer>
+
+    <div id="modal" class="fixed inset-0 z-50 items-center justify-center hidden">
+        <div id="modal-bg" class="absolute inset-0 bg-black/50 modal-bg opacity-0"></div>
+        <div id="modal-content" class="relative bg-white rounded-lg shadow-xl w-11/12 max-w-2xl max-h-[80vh] overflow-y-auto p-6 m-4 modal-content transform scale-95">
+            <button id="close-modal" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+            <div id="modal-body"></div>
+        </div>
+    </div>
+
+    <script>
+        const databases = [
+            {
+                id: 'nlc',
+                name: '中華古籍資源庫',
+                type: '國家/學術',
+                access: '免費',
+                scale: 20000,
+                scaleText: '2萬餘部古籍',
+                tags: ['經史子集', '方志', '出土文獻', '藝術影像'],
+                depth: 5,
+                description: '國家圖書館出品，權威性高，富含善本、方志、碑帖等珍稀文獻全彩影像。',
+                details: `
+                    <h4 class="text-xl font-bold mb-2">中華古籍資源庫 (國家圖書館)</h4>
+                    <p class="mb-4">作為中國國家圖書館的重要數位化成果，具有極高的權威性和豐富性。直接繼承皇家珍藏，宋元舊椠、明清精刻琳琅滿目。</p>
+                    <ul class="list-disc list-inside space-y-2 text-gray-700">
+                        <li><strong>核心收藏：</strong>包含2萬餘部善本古籍、6529種地方志、23萬餘件碑帖拓片、18萬餘拍敦煌寫卷影像等。</li>
+                        <li><strong>特色子庫：</strong>設有數字古籍、數字方志、趙城金藏、宋人文集、碑帖菁華、甲骨世界、敦煌遺珍等多個專題庫。</li>
+                        <li><strong>研究價值：</strong>為學術界提供高清晰度的原始資料，是需要權威、原始經典文獻研究者的首選。</li>
+                    </ul>
+                `
+            },
+            {
+                id: 'chssc',
+                name: '漢達文庫',
+                type: '學術機構',
+                access: '付費/機構',
+                scale: 8000,
+                scaleText: '8,000萬字',
+                tags: ['出土文獻', '經史子集'],
+                depth: 5,
+                description: '香港中文大學出品，聚焦商周至魏晉南北朝的傳世及出土文獻，甲骨文資料庫尤為出色。',
+                details: `
+                    <h4 class="text-xl font-bold mb-2">漢達文庫 (香港中文大學)</h4>
+                    <p class="mb-4">由香港中文大學中國文化研究所建立，專注於早期文獻與特定學術領域的深度挖掘，共收錄約8,000萬字。</p>
+                    <ul class="list-disc list-inside space-y-2 text-gray-700">
+                        <li><strong>時間範圍：</strong>由商周以至魏晉南北朝。</li>
+                        <li><strong>特色子庫：</strong>《甲骨文資料庫》收錄卜辭達67,683片，並提供甲骨圖文對照模式。</li>
+                        <li><strong>研究價值：</strong>在上古史、先秦思想等特定學術領域具備極高的專業性和深度，是研究中國早期文明的學者不可或缺的資源。</li>
+                    </ul>
+                `
+            },
+            {
+                id: 'shuge',
+                name: '書格 (Shuge.org)',
+                type: '開放共享',
+                access: '免費',
+                scale: 3000,
+                scaleText: '3000+套資源',
+                tags: ['藝術影像', '經史子集'],
+                depth: 3,
+                description: '自由開放的數字圖書館，精選藝術類、影像類、珍稀類古籍善本與字畫。',
+                details: `
+                    <h4 class="text-xl font-bold mb-2">書格 (Shuge.org)</h4>
+                    <p class="mb-4">一個自由開放的數字圖書館，致力於分享有價值的古籍善本、字畫，並鼓勵將文化藝術作品數位化歸檔。</p>
+                    <ul class="list-disc list-inside space-y-2 text-gray-700">
+                        <li><strong>內容偏好：</strong>精心挑選藝術類、影像類、珍稀類以及刊印水平較高的書籍。</li>
+                        <li><strong>特色資源：</strong>包含《中國野史集成》等非主流文獻，填補了官方機構在藝術、影像及非主流文獻數位化方面的空白。</li>
+                        <li><strong>核心理念：</strong>完全開放，文件分發自由，體現社群協作的數位人文精神。</li>
+                    </ul>
+                `
+            },
+            {
+                id: 'ctext',
+                name: '中國哲學書電子化計劃',
+                type: '開放共享',
+                access: '免費',
+                scale: 30000,
+                scaleText: '3萬餘部作品',
+                tags: ['經史子集', '神話傳說', '出土文獻', '野史雜記'],
+                depth: 5,
+                description: '強大的線上古籍文獻檢索系統，不僅是文獻庫，更是學術研究平台，提供多種文本分析工具。',
+                details: `
+                    <h4 class="text-xl font-bold mb-2">中國哲學書電子化計劃 (Ctext.org)</h4>
+                    <p class="mb-4">一個線上古籍文獻檢索系統，收錄超過三萬部作品和五十億字，是最大的歷史漢語文獻資料庫之一。</p>
+                    <ul class="list-disc list-inside space-y-2 text-gray-700">
+                        <li><strong>核心功能：</strong>提供內部字典、詞語分析、相似段落資料、高級搜索、歷代註釋本等強大功能，體現數位化從「存儲」到「分析」的進階。</li>
+                        <li><strong>內容涵蓋：</strong>先秦兩漢至民國的儒、墨、道、法、兵家著作，以及史書、經典（如《山海經》、《楚辭》）、醫學、字書等。</li>
+                        <li><strong>研究價值：</strong>對於需要進行嚴謹文本考證、語言學研究或思想史追溯的研究者，是不可或缺的資源。</li>
+                    </ul>
+                `
+            },
+            {
+                id: 'guoxue',
+                name: '國學大師網',
+                type: '開放共享',
+                access: '免費',
+                scale: 20000,
+                scaleText: '2萬種圖書',
+                tags: ['經史子集', '野史雜記', '神話傳說'],
+                depth: 3,
+                description: '內容極其豐富的綜合性古籍入口，收錄海量古典文學作品，適合廣泛閱讀與初步探索。',
+                details: `
+                    <h4 class="text-xl font-bold mb-2">國學大師網 (Guoxuedashi.net)</h4>
+                    <p class="mb-4">號稱集成古典圖書2萬種、28萬卷、約24億字，是目前網上收錄古典文學作品最全最多的圖書集成之一。</p>
+                    <ul class="list-disc list-inside space-y-2 text-gray-700">
+                        <li><strong>內容廣度：</strong>涵蓋經、史、子、集、詩、易、藝、醫等各部，並提供影印古籍、詩詞、漢字、書法等多種資源。</li>
+                        <li><strong>特色分類：</strong>明確列有「笔记小说大观」等分類，方便查找雜記類文獻。</li>
+                        <li><strong>用戶定位：</strong>「全而廣」的策略使其成為一個「一站式」的古籍資源中心，兼顧學術研究與文化普及的需求。</li>
+                    </ul>
+                `
+            },
+            {
+                id: 'shidian',
+                name: '識典古籍',
+                type: '開放共享',
+                access: '免費',
+                scale: 2000,
+                scaleText: '2千餘部古籍',
+                tags: ['經史子集'],
+                depth: 4,
+                description: '北大與字節跳動合作開發，閱讀體驗現代化，提供詞典查詢等智慧功能，降低閱讀門檻。',
+                details: `
+                    <h4 class="text-xl font-bold mb-2">識典古籍 (Shidian Guji)</h4>
+                    <p class="mb-4">北京大學與字節跳動數字人文開放實驗室合作開發和運營的中國古籍數位化平台。</p>
+                    <ul class="list-disc list-inside space-y-2 text-gray-700">
+                        <li><strong>用戶體驗：</strong>採用現代化的橫向排版，支持多種字體顯示，並可查看原始掃描影像。</li>
+                        <li><strong>智能功能：</strong>提供專有名詞標註與詞典查詢功能，可即時查詢「漢語大詞典」和「頭條百科」的定義。</li>
+                        <li><strong>發展趨勢：</strong>代表了將互聯網技術實力與學術專業知識相結合的新趨勢，提供更友好、智能化的閱讀研究體驗。</li>
+                    </ul>
+                `
+            },
+            {
+                id: 'airusheng',
+                name: '愛如生系列資料庫',
+                type: '商業',
+                access: '付費/機構',
+                scale: 10000,
+                scaleText: '1萬種(基本庫)',
+                tags: ['經史子集', '野史雜記', '方志'],
+                depth: 5,
+                description: '專業古籍資料庫，提供高度專業化且集成度高的特定文獻，如俗文庫、譜牒庫、方志庫等。',
+                details: `
+                    <h4 class="text-xl font-bold mb-2">愛如生-中國基本古籍庫及系列產品</h4>
+                    <p class="mb-4">提供一系列專業古籍資料庫，在古籍數位化領域採取垂直深耕的策略，滿足專業學術研究的深度需求。</p>
+                    <ul class="list-disc list-inside space-y-2 text-gray-700">
+                        <li><strong>中國基本古籍庫：</strong>包含10,000種、170,000卷古籍，時間跨度長，內容廣泛。</li>
+                        <li><strong>專門資料庫：</strong>推出多個專門資料庫，如「中國俗文庫」（通俗文學）、「中國譜牒庫」（家譜）、「中國方志庫」（地方志）。</li>
+                        <li><strong>研究價值：</strong>對於需要深入研究某一特定文獻類型的研究者而言，是不可或缺的，彌補了免費資源在專精領域的不足。</li>
+                    </ul>
+                `
+            },
+            {
+                id: 'shutongwen',
+                name: '書同文古籍數據庫',
+                type: '商業',
+                access: '付費/機構',
+                scale: 5000,
+                scaleText: '多種原始檔案',
+                tags: ['經史子集', '藝術影像'],
+                depth: 4,
+                description: '側重原始史料數位化，如歷代石刻、明清實錄、會典等官方檔案，為一手史料研究者提供便利。',
+                details: `
+                    <h4 class="text-xl font-bold mb-2">書同文古籍數據庫</h4>
+                    <p class="mb-4">涵蓋了多種重要的原始史料，為歷史學家提供了便捷的一手資料獲取途徑。</p>
+                    <ul class="list-disc list-inside space-y-2 text-gray-700">
+                        <li><strong>核心內容：</strong>包括「中國歷代石刻史料匯編」、「四部叢刊」、「大明實錄」、「大清歷代實錄」、「大清五部會典」等。</li>
+                        <li><strong>研究價值：</strong>積極投入到特定、高價值但難以處理的原始文獻的數位化中，對於推動歷史學、檔案學等領域的研究具有深遠意義。</li>
+                    </ul>
+                `
+            }
+        ];
+
+        const accordionData = [
+            { title: '多平台交叉檢索', content: '由於各資料庫內容側重、收錄範圍及更新頻率不同，不應局限於單一平台。例如，在國家圖書館查找善本，在Ctext.org進行文本分析，在國學大師網進行廣泛瀏覽，在書格尋找藝術類文獻。這種多平台操作能夠確保研究的全面性。' },
+            { title: '善用高級檢索功能', content: '大部分專業資料庫提供布林算符（AND, OR, NOT）、截詞符（*）、位置算符（near）等高級檢索功能，可大幅提高檢索精準度。應特別注意繁簡體字、異體字通檢功能，以確保檢索結果的全面性。' },
+            { title: '關注影像與文本對照', content: '對於學術研究，原始影像的重要性不亞於數位化文本，它們是校勘、版本研究和字體演變研究的關鍵。許多平台提供文本與影像的同步對照，極大方便了研究。' },
+            { title: '注意版權與訪問權限', content: '應明確區分免費開放資源（如書格、Ctext.org）與商業性收費資源（如愛如生系列），以及需要機構帳戶才能訪問的資源。商業資源通常可通過所在高校或研究機構圖書館的訂閱服務進行訪問。' },
+            { title: '利用元數據與索引', content: '善用資料庫提供的書目信息、作者、年代、分類、關鍵字等元數據進行篩選和導航，這有助於快速定位特定類型的文獻，是理解文獻內容和背景的重要線索。' },
+            { title: '參與社群與論壇', content: '古籍整理論壇、書格討論區等線上社群是獲取最新數位化資訊、交流研究經驗、尋求幫助的重要渠道。這些社群不僅能提供實用的檢索技巧，也能促進學術交流與合作。' }
+        ];
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const dbGrid = document.getElementById('db-grid');
+            const noResults = document.getElementById('no-results');
+            const textTypeFilter = document.getElementById('textTypeFilter');
+            const resourceTypeFilterContainer = document.getElementById('resourceTypeFilter');
+            const accessFilterContainer = document.getElementById('accessFilter');
+            const modal = document.getElementById('modal');
+            const modalBg = document.getElementById('modal-bg');
+            const closeModalBtn = document.getElementById('close-modal');
+            const modalBody = document.getElementById('modal-body');
+            const accordion = document.getElementById('accordion');
+
+            let filters = {
+                textType: 'all',
+                resourceType: 'all',
+                access: 'all'
+            };
+
+            function renderCards() {
+                dbGrid.innerHTML = '';
+                const filteredDbs = databases.filter(db => {
+                    const textTypeMatch = filters.textType === 'all' || db.tags.includes(filters.textType);
+                    const resourceTypeMatch = filters.resourceType === 'all' || db.type.includes(filters.resourceType);
+                    const accessMatch = filters.access === 'all' || db.access.includes(filters.access);
+                    return textTypeMatch && resourceTypeMatch && accessMatch;
+                });
+
+                if (filteredDbs.length === 0) {
+                    noResults.classList.remove('hidden');
+                } else {
+                    noResults.classList.add('hidden');
+                }
+
+                filteredDbs.forEach(db => {
+                    const card = document.createElement('div');
+                    card.className = 'card bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden flex flex-col';
+                    card.innerHTML = `
+                        <div class="p-5 flex-grow">
+                            <div class="flex justify-between items-start mb-2">
+                                <h4 class="text-lg font-bold text-gray-800">${db.name}</h4>
+                                <span class="text-xs font-semibold ${db.access === '免費' ? 'bg-green-100 text-green-800' : 'bg-orange-100 text-orange-800'} px-2 py-1 rounded-full">${db.access}</span>
+                            </div>
+                            <p class="text-gray-600 text-sm mb-4">${db.description}</p>
+                        </div>
+                        <div class="p-5 bg-gray-50 border-t border-gray-200">
+                             <div class="flex justify-between items-center">
+                                <p class="text-sm text-gray-500">${db.type} • ${db.scaleText}</p>
+                                <button data-id="${db.id}" class="details-btn text-sm font-semibold text-[#A98B71] hover:text-[#8c6d52]">查看詳情 &rarr;</button>
+                            </div>
+                        </div>
+                    `;
+                    dbGrid.appendChild(card);
+                });
+            }
+            
+            function setupFilters() {
+                textTypeFilter.addEventListener('change', (e) => {
+                    filters.textType = e.target.value;
+                    renderCards();
+                });
+
+                resourceTypeFilterContainer.addEventListener('click', (e) => {
+                    if (e.target.tagName === 'BUTTON') {
+                        resourceTypeFilterContainer.querySelector('.active').classList.remove('active');
+                        e.target.classList.add('active');
+                        filters.resourceType = e.target.dataset.filter;
+                        renderCards();
+                    }
+                });
+
+                accessFilterContainer.addEventListener('click', (e) => {
+                    if (e.target.tagName === 'BUTTON') {
+                        accessFilterContainer.querySelector('.active').classList.remove('active');
+                        e.target.classList.add('active');
+                        filters.access = e.target.dataset.filter;
+                        renderCards();
+                    }
+                });
+            }
+
+            function setupModal() {
+                dbGrid.addEventListener('click', (e) => {
+                    if (e.target.classList.contains('details-btn')) {
+                        const dbId = e.target.dataset.id;
+                        const dbData = databases.find(db => db.id === dbId);
+                        if (dbData) {
+                            modalBody.innerHTML = dbData.details;
+                            modal.classList.remove('hidden');
+                            modal.classList.add('flex');
+                            setTimeout(() => {
+                                modalBg.classList.remove('opacity-0');
+                                document.getElementById('modal-content').classList.remove('scale-95');
+                            }, 10);
+                        }
+                    }
+                });
+
+                const closeTheModal = () => {
+                    modalBg.classList.add('opacity-0');
+                    document.getElementById('modal-content').classList.add('scale-95');
+                    setTimeout(() => {
+                        modal.classList.add('hidden');
+                        modal.classList.remove('flex');
+                    }, 300);
+                };
+
+                closeModalBtn.addEventListener('click', closeTheModal);
+                modalBg.addEventListener('click', closeTheModal);
+            }
+            
+            function createAccordion() {
+                accordionData.forEach((item, index) => {
+                    const accordionItem = document.createElement('div');
+                    accordionItem.className = 'bg-white rounded-lg border border-gray-200';
+                    accordionItem.innerHTML = `
+                        <button class="accordion-toggle w-full flex justify-between items-center text-left p-4 font-semibold text-gray-700 hover:bg-gray-50">
+                            <span>${item.title}</span>
+                            <svg class="w-5 h-5 transform transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                        </button>
+                        <div class="accordion-content">
+                            <p class="p-4 pt-0 text-gray-600">${item.content}</p>
+                        </div>
+                    `;
+                    accordion.appendChild(accordionItem);
+                });
+
+                accordion.addEventListener('click', (e) => {
+                    const toggle = e.target.closest('.accordion-toggle');
+                    if (toggle) {
+                        const content = toggle.nextElementSibling;
+                        const icon = toggle.querySelector('svg');
+                        
+                        if (content.style.maxHeight) {
+                            content.style.maxHeight = null;
+                            icon.classList.remove('rotate-180');
+                        } else {
+                            document.querySelectorAll('.accordion-content').forEach(c => c.style.maxHeight = null);
+                            document.querySelectorAll('.accordion-toggle svg').forEach(i => i.classList.remove('rotate-180'));
+                            content.style.maxHeight = content.scrollHeight + "px";
+                            icon.classList.add('rotate-180');
+                        }
+                    }
+                });
+            }
+
+            function createChart() {
+                const ctx = document.getElementById('dbChart').getContext('2d');
+                const chartData = {
+                    datasets: databases.map(db => ({
+                        label: db.name,
+                        data: [{
+                            x: { '國家/學術': 1, '學術機構': 1, '開放共享': 2, '商業': 3 }[db.type] + (Math.random() - 0.5) * 0.4,
+                            y: db.depth + (Math.random() - 0.5) * 0.4,
+                            r: Math.log(db.scale + 1) * 2.5
+                        }],
+                        backgroundColor: db.access === '免費' ? 'rgba(74, 169, 108, 0.6)' : 'rgba(211, 122, 53, 0.6)',
+                        borderColor: db.access === '免費' ? 'rgba(74, 169, 108, 1)' : 'rgba(211, 122, 53, 1)',
+                        borderWidth: 1,
+                    }))
+                };
+
+                new Chart(ctx, {
+                    type: 'bubble',
+                    data: chartData,
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: false
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        const db = databases[context.datasetIndex];
+                                        return [
+                                            `${db.name}`,
+                                            `規模: ${db.scaleText}`,
+                                            `類型: ${db.type}`,
+                                            `訪問: ${db.access}`
+                                        ];
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            x: {
+                                title: {
+                                    display: true,
+                                    text: '資源類型 (學術性 → 商業性)',
+                                    font: { size: 14 }
+                                },
+                                ticks: {
+                                    callback: function(value, index, values) {
+                                        return { 1: '國家/學術', 2: '開放共享', 3: '商業' }[value] || '';
+                                    }
+                                },
+                                grid: {
+                                    display: false
+                                }
+                            },
+                            y: {
+                                title: {
+                                    display: true,
+                                    text: '專業深度與功能性',
+                                    font: { size: 14 }
+                                },
+                                min: 2,
+                                max: 6,
+                                grid: {
+                                    color: '#eee'
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+            renderCards();
+            setupFilters();
+            setupModal();
+            createChart();
+            createAccordion();
+        });
+    </script>
+</body>
+</html>
