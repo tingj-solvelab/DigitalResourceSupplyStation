@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="zh-Hant" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>台灣長尾龜（斑龜）互動資訊圖表</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Brilliant Blues -->
+    <!-- Application Structure Plan: The infographic follows a linear narrative structure designed for scrolling, guiding the user on a journey of discovery. It starts with a high-impact introduction ('Who is the Long-tailed Turtle?'), moves to the core conflict ('An Icon in Peril'), provides a detailed, actionable solution ('The Responsible Keeper's Blueprint'), and ends with a clear call to action ('Your Role in Conservation'). This structure was chosen to first build empathy and understanding of the problem, then empower the user with the knowledge to be part of the solution, making the information both digestible and impactful. -->
+    <!-- Visualization & Content Choices: 
+        - Key Stats (Intro): Goal: Inform. Method: Large, bold text in styled cards (HTML/CSS). Justification: Immediately conveys the most critical data points (IUCN status, lifespan) with high visual impact.
+        - Threats Comparison (An Icon in Peril): Goal: Compare. Method: Horizontal Bar Chart (Chart.js). Justification: Effectively ranks the severity of different threats, making the abstract concept of 'danger' concrete and easy to compare.
+        - Habitat Diagram (Keeper's Blueprint): Goal: Organize. Method: Structured HTML/CSS diagram. Justification: Visually represents the ideal tank setup in a clear, easy-to-reference format without using prohibited SVG/Mermaid JS.
+        - Diet Shift Chart (Keeper's Blueprint): Goal: Change. Method: Stacked Bar Chart (Chart.js). Justification: Clearly illustrates the significant dietary shift from juvenile to adult, a key concept for proper care.
+        - Disease Prevention (Keeper's Blueprint): Goal: Organize. Method: Styled list/cards (HTML/CSS). Justification: Breaks down complex health information into digestible, categorized chunks for easy learning and reference.
+        - All visualizations use either Chart.js (Canvas) or structured HTML/CSS with Tailwind, adhering to the NO SVG/Mermaid constraint. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background-color: #f0f4f8;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px;
+            max-height: 400px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 350px;
+            }
+        }
+        .gradient-text {
+            background: linear-gradient(90deg, #955196, #DD5182);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-fill-color: transparent;
+        }
+    </style>
+</head>
+<body class="text-gray-800">
+
+    <div class="container mx-auto px-4 py-8 md:py-16">
+
+        <section class="text-center mb-16 md:mb-24">
+            <h1 class="text-4xl md:text-6xl font-black mb-4 text-[#003F5C]">解謎：誰是「長尾龜」？</h1>
+            <p class="max-w-3xl mx-auto text-lg text-gray-600">在台灣，我們熟悉的「長尾龜」，其實是學名為 *Mauremys sinensis* 的「斑龜」。牠是台灣體型最大的淡水龜，也是文化中的長壽象徵。然而，這個普遍的物種，正悄悄地走向一場生存危機。</p>
+            <div class="mt-8 grid grid-cols-1 sm:grid-cols-3 gap-6 max-w-4xl mx-auto">
+                <div class="bg-white p-6 rounded-2xl shadow-lg border-t-4 border-[#DD5182]">
+                    <p class="text-sm font-bold text-[#DD5182]">IUCN 保育等級</p>
+                    <p class="text-5xl font-black text-[#003F5C] mt-2">CR</p>
+                    <p class="text-gray-500 mt-1">極度瀕危</p>
+                </div>
+                <div class="bg-white p-6 rounded-2xl shadow-lg border-t-4 border-[#FF6E54]">
+                    <p class="text-sm font-bold text-[#FF6E54]">平均壽命</p>
+                    <p class="text-5xl font-black text-[#003F5C] mt-2">20-40</p>
+                    <p class="text-gray-500 mt-1">年</p>
+                </div>
+                <div class="bg-white p-6 rounded-2xl shadow-lg border-t-4 border-[#FFA600]">
+                    <p class="text-sm font-bold text-[#FFA600]">成龜體長</p>
+                    <p class="text-5xl font-black text-[#003F5C] mt-2">~27</p>
+                    <p class="text-gray-500 mt-1">公分 (雌龜)</p>
+                </div>
+            </div>
+        </section>
+
+        <hr class="my-16 md:my-24 border-t-2 border-gray-200">
+
+        <section class="mb-16 md:mb-24">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl md:text-5xl font-black mb-4 gradient-text">文化祥瑞 vs. 生存危機</h2>
+                <p class="max-w-3xl mx-auto text-lg text-gray-600">作為文化中的「四靈」之一，烏龜象徵福祿壽喜。但現實中，斑龜面臨著多重威脅，其中以商業利益驅動的非法盜獵最為致命，正將牠們推向滅絕的邊緣。</p>
+            </div>
+            <div class="bg-white p-6 md:p-8 rounded-2xl shadow-xl">
+                <h3 class="text-xl font-bold text-center text-[#003F5C] mb-4">斑龜面臨的主要生存威脅</h3>
+                <div class="chart-container">
+                    <canvas id="threatsChart"></canvas>
+                </div>
+                <p class="text-xs text-center text-gray-500 mt-4">此圖表根據報告中對各威脅嚴重性的描述進行量化，分數越高代表威脅程度越嚴重。</p>
+            </div>
+        </section>
+        
+        <hr class="my-16 md:my-24 border-t-2 border-gray-200">
+
+        <section class="mb-16 md:mb-24">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl md:text-5xl font-black mb-4 text-[#003F5C]">飼主藍圖：打造理想家園</h2>
+                <p class="max-w-3xl mx-auto text-lg text-gray-600">飼養斑龜是一項長達數十年的承諾。提供一個符合其天性的環境，是確保牠們健康快樂的基礎。以下是三大核心要素。</p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div class="bg-white p-6 md:p-8 rounded-2xl shadow-xl space-y-6">
+                    <h3 class="text-2xl font-bold text-[#444E86]">1. 環境設置：水陸雙拼豪宅</h3>
+                    <p class="text-gray-600">模擬野外生活是關鍵。一個理想的家需要充足的游泳水域、完全乾燥的陸地，以及最重要的——潔淨的水質與穩定的光照和溫度。</p>
+                    <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                        <div class="font-bold text-center mb-2 text-[#444E86]">關鍵設備示意圖</div>
+                        <div class="relative h-48 border-2 border-dashed border-gray-300 rounded-md p-2 flex">
+                            <div class="w-2/3 bg-blue-100 rounded-l-sm flex items-end justify-center">
+                                <span class="text-sm text-blue-800 font-semibold">水域 (70%)</span>
+                            </div>
+                            <div class="w-1/3 bg-yellow-100 rounded-r-sm flex items-end justify-center">
+                                <span class="text-sm text-yellow-800 font-semibold">陸地 (30%)</span>
+                            </div>
+                            <div class="absolute top-1 left-2 text-xs bg-white px-2 py-1 rounded-full shadow">☀️ UVB燈</div>
+                            <div class="absolute top-1 right-2 text-xs bg-white px-2 py-1 rounded-full shadow">🌡️ 加溫棒</div>
+                            <div class="absolute bottom-1 left-2 text-xs bg-white px-2 py-1 rounded-full shadow">💧 過濾器</div>
+                            <div class="absolute bottom-1 right-10 text-xs bg-white px-2 py-1 rounded-full shadow">⛰️ 躲藏處</div>
+                        </div>
+                    </div>
+                    <ul class="text-sm space-y-2 text-gray-700">
+                        <li><strong class="text-[#444E86]">空間：</strong>飼養箱尺寸至少為龜體長的8倍，且務必加蓋。</li>
+                        <li><strong class="text-[#444E86]">水溫：</strong>穩定維持在 23-28°C。</li>
+                        <li><strong class="text-[#444E86]">光照：</strong>每日需自然光或UVB燈照射，幫助吸收鈣質。</li>
+                    </ul>
+                </div>
+                
+                <div class="bg-white p-6 md:p-8 rounded-2xl shadow-xl space-y-6">
+                    <h3 class="text-2xl font-bold text-[#955196]">2. 飲食計畫：年齡決定菜單</h3>
+                    <p class="text-gray-600">斑龜的食性會隨年齡轉變。幼龜偏好高蛋白的肉食，而成龜則轉為以植物為主的雜食。提供正確的飲食是預防疾病的基礎。</p>
+                    <div class="chart-container h-64 md:h-72">
+                        <canvas id="dietChart"></canvas>
+                    </div>
+                     <p class="text-xs text-center text-gray-500 -mt-4">此圖表為示意圖，顯示幼龜與成龜在蛋白質與植物性食物需求上的相對變化。</p>
+                </div>
+
+                <div class="bg-white p-6 md:p-8 rounded-2xl shadow-xl lg:col-span-2">
+                    <h3 class="text-2xl font-bold text-[#DD5182]">3. 健康管理：預防勝於治療</h3>
+                    <p class="text-gray-600 mb-6">多數疾病源於不當的飼養管理。維持環境穩定潔淨，並留意早期警訊，是守護龜龜健康的黃金法則。若有任何疑慮，請立即尋求專業特寵獸醫協助。</p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                        <div class="bg-red-50 p-4 rounded-lg border-l-4 border-red-400">
+                            <h4 class="font-bold text-red-800">腐皮/爛甲/白眼症</h4>
+                            <p class="text-sm text-red-700 mt-1">主因：水質骯髒。預防：強力過濾、勤換水。</p>
+                        </div>
+                        <div class="bg-blue-50 p-4 rounded-lg border-l-4 border-blue-400">
+                            <h4 class="font-bold text-blue-800">呼吸道感染</h4>
+                            <p class="text-sm text-blue-700 mt-1">主因：溫差過大。預防：保持恆溫、避免風口。</p>
+                        </div>
+                        <div class="bg-green-50 p-4 rounded-lg border-l-4 border-green-400">
+                            <h4 class="font-bold text-green-800">結石</h4>
+                            <p class="text-sm text-green-700 mt-1">主因：水分不足。預防：確保充足飲水、維持濕度。</p>
+                        </div>
+                        <div class="bg-yellow-50 p-4 rounded-lg border-l-4 border-yellow-400">
+                            <h4 class="font-bold text-yellow-800">骨骼疾病</h4>
+                            <p class="text-sm text-yellow-700 mt-1">主因：缺鈣/缺光照。預防：補充鈣粉、提供UVB。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <hr class="my-16 md:my-24 border-t-2 border-gray-200">
+
+        <section class="text-center">
+            <h2 class="text-3xl md:text-5xl font-black mb-4 gradient-text">你的選擇，龜的未來</h2>
+            <p class="max-w-3xl mx-auto text-lg text-gray-600 mb-12">作為飼主，您的每一個決定都至關重要。請成為解決方案的一部分，而非問題的根源。</p>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="bg-white p-8 rounded-2xl shadow-xl transform hover:-translate-y-2 transition-transform duration-300">
+                    <div class="text-5xl mb-4">❤️</div>
+                    <h3 class="text-xl font-bold text-[#003F5C]">認養代替購買</h3>
+                    <p class="text-gray-600 mt-2 text-sm">杜絕非法盜獵，給收容所的龜一個家。</p>
+                </div>
+                <div class="bg-white p-8 rounded-2xl shadow-xl transform hover:-translate-y-2 transition-transform duration-300">
+                    <div class="text-5xl mb-4">🚫</div>
+                    <h3 class="text-xl font-bold text-[#003F5C]">終養不棄養</h3>
+                    <p class="text-gray-600 mt-2 text-sm">棄養會造成生態浩劫。這是一輩子的承諾。</p>
+                </div>
+                <div class="bg-white p-8 rounded-2xl shadow-xl transform hover:-translate-y-2 transition-transform duration-300">
+                    <div class="text-5xl mb-4">🤝</div>
+                    <h3 class="text-xl font-bold text-[#003F5C]">支持本土保育</h3>
+                    <p class="text-gray-600 mt-2 text-sm">關注保育資訊，協助路上的龜，成為牠們的守護者。</p>
+                </div>
+            </div>
+        </section>
+
+    </div>
+
+    <footer class="text-center py-8 bg-gray-800 text-gray-400 text-xs">
+        <p>本資訊圖表內容根據「台灣『長尾龜』物種調查與居家飼養指南」報告製作。</p>
+        <p>愛牠，就請負起責任，給牠一個健康、永續的未來。</p>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const tooltipTitleCallback = (tooltipItems) => {
+                const item = tooltipItems[0];
+                let label = item.chart.data.labels[item.dataIndex];
+                if (Array.isArray(label)) {
+                    return label.join(' ');
+                }
+                return label;
+            };
+            
+            const threatsCtx = document.getElementById('threatsChart').getContext('2d');
+            new Chart(threatsCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['盜獵與非法貿易', '棲地喪失與劣化', '外來種競爭', '路殺'],
+                    datasets: [{
+                        label: '威脅嚴重性評分',
+                        data: [10, 8, 7, 5],
+                        backgroundColor: ['#DD5182', '#FF6E54', '#FFA600', '#955196'],
+                        borderRadius: 5,
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                            grid: { color: '#e2e8f0' }
+                        },
+                        y: {
+                            grid: { display: false }
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: '#003F5C',
+                            titleFont: { weight: 'bold' },
+                            bodyFont: { size: 12 },
+                            padding: 10,
+                            cornerRadius: 5,
+                            callbacks: { title: tooltipTitleCallback }
+                        }
+                    }
+                }
+            });
+
+            const dietCtx = document.getElementById('dietChart').getContext('2d');
+            new Chart(dietCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['幼龜 (Juvenile)', '成龜 (Adult)'],
+                    datasets: [
+                        {
+                            label: '動物性蛋白',
+                            data: [70, 25],
+                            backgroundColor: '#DD5182',
+                        },
+                        {
+                            label: '植物性食物',
+                            data: [15, 60],
+                            backgroundColor: '#FFA600',
+                        },
+                        {
+                            label: '專用飼料',
+                            data: [15, 15],
+                            backgroundColor: '#444E86',
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: { stacked: true, grid: { display: false } },
+                        y: { stacked: true, grid: { color: '#e2e8f0' }, ticks: { callback: value => value + '%' } }
+                    },
+                    plugins: {
+                        legend: { position: 'bottom' },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false,
+                            backgroundColor: '#003F5C',
+                            titleFont: { weight: 'bold' },
+                            bodyFont: { size: 12 },
+                            padding: 10,
+                            cornerRadius: 5,
+                            callbacks: { title: tooltipTitleCallback }
+                        },
+                        title: {
+                            display: true,
+                            text: '幼龜與成龜飲食結構變化',
+                            font: { size: 16 },
+                            color: '#003F5C',
+                            padding: { bottom: 16 }
+                        }
+                    }
+                }
+            });
+        });
+    </script>
+
+</body>
+</html>
